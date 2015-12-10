@@ -40,11 +40,17 @@ defmodule Dealer do
       { :war, cards } ->
         IO.puts "We have a war!"
         loop(cards, player_one, player_two)
+      { :king, :one } ->
+        IO.puts "#{inspect player_one} wins!!"
+        System.halt 0
+      { :king, :two } ->
+        IO.puts "#{inspect player_two} wins!!"
+        System.halt 0
     end
   end
 
   defp loop(pile, player_one, player_two) do
-    IO.puts "The pile is #{pile}"
+    IO.puts "The pile is #{Enum.join(pile, ", ")}"
     send player_one, { self, :cards }
     send player_two, { self, :cards }
 
@@ -87,7 +93,11 @@ defmodule Dealer do
           pid == player_two -> { pile_one, card }
         end
       { pid, :cards, cards } ->
-        IO.puts "Player #{inspect pid} played #{cards}"
+        IO.puts "Player #{inspect pid} played #{Enum.join(cards, ", ")}"
+        cond do
+          pid == player_one -> { cards, pile_two }
+          pid == player_two -> { pile_one, cards }
+        end
     end
   end
 
@@ -103,7 +113,15 @@ defmodule Dealer do
             receive_cards(player_one, player_two, play_count + 1, pile_one, card)
         end
       { pid, :cards, cards } ->
-        IO.puts "Player #{inspect pid} played #{cards}"
+        IO.puts "Player #{inspect pid} played #{Enum.join(cards, ", ")}"
+        cond do
+          pid == player_one ->
+            receive_cards(player_one, player_two, 1, cards, pile_two)
+          pid == player_two ->
+            receive_cards(player_one, player_two, 1, pile_one, cards)
+        end
+    after
+      1000 -> raise "Message didn't arrive"
     end
 
   end
