@@ -37,9 +37,9 @@ defmodule Dealer do
         send player_two, { self, :victory, Tuple.to_list cards }
 
         loop(%{}, player_one, player_two)
-      { :war, cards_one, cards_two } ->
+      { :war, cards } ->
         IO.puts "We have a war!"
-        loop([cards_one, cards_two], player_one, player_two)
+        loop(cards, player_one, player_two)
     end
   end
 
@@ -82,18 +82,18 @@ defmodule Dealer do
 
   end
 
-  defp compare({ a, b }) do
+  def compare({ a, b }) do
     {[ _ | rank_a ], [ _ | rank_b ]} = { a, b }
 
-    case compare(rank_a, rank_b) do
-      { :war } -> { :war, a, b }
+    case _compare(rank_a, rank_b) do
+      { :war } -> { :war, [ a, b ] }
       retval -> retval
     end
   end
 
-  defp compare(a, b) when a > b, do: { :winner, :one }
-  defp compare(a, b) when a < b, do: { :winner, :two }
-  defp compare(a, a), do: { :war }
-  defp compare([], _), do: { :king, :two }
-  defp compare(_, []), do: { :king, :one }
+  defp _compare(a, b) when a > b, do: { :winner, :one }
+  defp _compare(a, b) when a < b, do: { :winner, :two }
+  defp _compare(a, a), do: { :war }
+  defp _compare([], _), do: { :king, :two }
+  defp _compare(_, []), do: { :king, :one }
 end
