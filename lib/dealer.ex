@@ -42,10 +42,10 @@ defmodule Dealer do
         loop(cards, player_one, player_two)
       { :king, :one } ->
         IO.puts "#{inspect player_one} wins!!"
-        System.halt 0
+        end_game(player_one, player_two)
       { :king, :two } ->
         IO.puts "#{inspect player_two} wins!!"
-        System.halt 0
+        end_game(player_one, player_two)
     end
   end
 
@@ -74,10 +74,10 @@ defmodule Dealer do
         loop(cards, player_one, player_two)
       { :king, :one } ->
         IO.puts "#{inspect player_one} wins!!"
-        System.halt 0
+        end_game(player_one, player_two)
       { :king, :two } ->
         IO.puts "#{inspect player_two} wins!!"
-        System.halt 0
+        end_game(player_one, player_two)
     end
   end
 
@@ -145,4 +145,9 @@ defmodule Dealer do
   defp _compare(a, b) when a > b, do: { :winner, :one }
   defp _compare(a, b) when a < b, do: { :winner, :two }
   defp _compare(a, a), do: { :war }
+
+  defp end_game(player_one, player_two) do
+    send player_one, :game_over
+    send player_two, :game_over
+  end
 end

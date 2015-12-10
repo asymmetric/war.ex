@@ -5,6 +5,8 @@ defmodule Player do
       { dealer, :card } when length(stack) == 0 ->
         IO.puts "#{inspect self}: I got no more cards!"
         send dealer, { self, :card, [] }
+
+        loop(stack)
       { dealer, :card } ->
         [ head | stack ] = stack
         send dealer, { self, :card, head }
@@ -13,6 +15,8 @@ defmodule Player do
       { dealer, :cards } when length(stack) == 0 ->
         IO.puts "#{inspect self}: I got no more cards!"
         send dealer, { self, :cards, [] }
+
+        loop(stack)
       { dealer, :cards } when length(stack) < 3 ->
         IO.puts "#{inspect self}: Was told to play 3 cards, but can't!"
         cards = Enum.take stack, 3
@@ -26,10 +30,11 @@ defmodule Player do
         send dealer, { self, :cards, [ a, b, c ] }
 
         loop(stack)
-      { dealer, :victory, cards } ->
+      { _dealer, :victory, cards } ->
         IO.puts "#{inspect self}: Won these cards: #{inspect cards}"
 
         loop(stack ++ cards)
+      :game_over -> IO.puts "#{inspect self}: Exiting game"
       _ -> IO.puts "Whatever"
     end
   end
