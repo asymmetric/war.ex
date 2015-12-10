@@ -1,12 +1,12 @@
 defmodule Dealer do
-  @suits 'CH'
-  @ranks '23456789'
+  @suits ~w/Clubs Hearts/
+  @ranks 2..9
   @count 8
 
   def start do
     import Enum
 
-    cards = for suit <- @suits, rank <- @ranks, do: [ suit, rank ]
+    cards = for suit <- @suits, rank <- @ranks, do: { rank, suit }
 
     cards =
       cards
@@ -56,7 +56,7 @@ defmodule Dealer do
 
     cards = receive_cards(player_one, player_two)
 
-    case compare_multiple(cards) do
+    case compare(cards) do
       { :winner, :one } ->
         IO.puts "#{inspect player_one} won the war!"
         { cards_one, cards_two } = cards
@@ -87,13 +87,13 @@ defmodule Dealer do
   defp receive_cards(player_one, player_two, 1, pile_one, pile_two) do
     receive do
       { pid, :card, card } ->
-        IO.puts "Player #{inspect pid} played #{card}"
+        IO.puts "Player #{inspect pid} played #{inspect card}"
         cond do
           pid == player_one -> { card, pile_two }
           pid == player_two -> { pile_one, card }
         end
       { pid, :cards, cards } ->
-        IO.puts "Player #{inspect pid} played #{Enum.join(cards, ", ")}"
+        IO.puts "Player #{inspect pid} played #{inspect cards}"
         cond do
           pid == player_one -> { cards, pile_two }
           pid == player_two -> { pile_one, cards }
@@ -105,7 +105,7 @@ defmodule Dealer do
   defp receive_cards(player_one, player_two, play_count, pile_one, pile_two) do
     receive do
       { pid, :card, card } ->
-        IO.puts "Player #{inspect pid} played #{card}"
+        IO.puts "Player #{inspect pid} played #{inspect card}"
         cond do
           pid == player_one ->
             receive_cards(player_one, player_two, play_count + 1, card, pile_two)
@@ -113,7 +113,7 @@ defmodule Dealer do
             receive_cards(player_one, player_two, play_count + 1, pile_one, card)
         end
       { pid, :cards, cards } ->
-        IO.puts "Player #{inspect pid} played #{Enum.join(cards, ", ")}"
+        IO.puts "Player #{inspect pid} played #{inspect cards}"
         cond do
           pid == player_one ->
             receive_cards(player_one, player_two, 1, cards, pile_two)
@@ -133,10 +133,9 @@ defmodule Dealer do
 
   def compare({[], _}), do: { :king, :two }
   def compare({_, []}), do: { :king, :one }
-  def compare({ a, b }) do
-    {[ _ | rank_a ], [ _ | rank_b ]} = { a, b }
-
-    case _compare(rank_a, rank_b) do
+  def compare({[ head_a | _ ], [ head_b  | _]}), do: compare({ head_a, head_b })
+  def compare({ { a, _ }, { b, _ } }) do
+    case _compare(a, b) do
       { :war } -> { :war, [ a, b ] }
       retval -> retval
     end
