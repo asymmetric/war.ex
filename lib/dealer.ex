@@ -47,6 +47,32 @@ defmodule Dealer do
     IO.puts "The pile is #{pile}"
     send player_one, { self, :cards }
     send player_two, { self, :cards }
+
+    cards = receive_cards(player_one, player_two)
+
+    case compare_multiple(cards) do
+      { :winner, :one } ->
+        IO.puts "#{inspect player_one} won the war!"
+        { cards_one, cards_two } = cards
+        send player_one, { self, :victory, cards_one ++ cards_two }
+
+        loop(%{}, player_one, player_two)
+      { :winner, :two } ->
+        IO.puts "#{inspect player_two} won the war!"
+        { cards_one, cards_two } = cards
+        send player_two, { self, :victory, cards_one ++ cards_two }
+
+        loop(%{}, player_one, player_two)
+      { :war, cards } ->
+        IO.puts "The war goes on!!"
+        loop(cards, player_one, player_two)
+      { :king, :one } ->
+        IO.puts "#{inspect player_one} wins!!"
+        System.halt 0
+      { :king, :two } ->
+        IO.puts "#{inspect player_two} wins!!"
+        System.halt 0
+    end
   end
 
   defp receive_cards(player_one, player_two, play_count \\ 0, pile_one \\ Map.new, pile_two \\ Map.new)
@@ -82,6 +108,13 @@ defmodule Dealer do
 
   end
 
+  def compare({[], _}), do: { :king, :two }
+  def compare({_, []}), do: { :king, :one }
+  def compare_multiple({a, b}) do
+    {[ head_a | a ], [ head_b | b ]} =  { a, b }
+    compare({ head_a, head_b })
+  end
+
   def compare({ a, b }) do
     {[ _ | rank_a ], [ _ | rank_b ]} = { a, b }
 
@@ -94,6 +127,4 @@ defmodule Dealer do
   defp _compare(a, b) when a > b, do: { :winner, :one }
   defp _compare(a, b) when a < b, do: { :winner, :two }
   defp _compare(a, a), do: { :war }
-  defp _compare([], _), do: { :king, :two }
-  defp _compare(_, []), do: { :king, :one }
 end
