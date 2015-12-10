@@ -1,0 +1,2 @@
+defmodule War do
+end
