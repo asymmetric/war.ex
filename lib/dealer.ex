@@ -126,13 +126,13 @@ defmodule Dealer do
 
   end
 
-  def compare({[], _}), do: { :king, :two }
-  def compare({_, []}), do: { :king, :one }
   def compare_multiple({a, b}) do
-    {[ head_a | a ], [ head_b | b ]} =  { a, b }
+    {[ head_a | _ ], [ head_b | _ ]} =  { a, b }
     compare({ head_a, head_b })
   end
 
+  def compare({[], _}), do: { :king, :two }
+  def compare({_, []}), do: { :king, :one }
   def compare({ a, b }) do
     {[ _ | rank_a ], [ _ | rank_b ]} = { a, b }
 
