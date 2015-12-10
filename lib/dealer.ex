@@ -1,7 +1,7 @@
 defmodule Dealer do
   @suits 'CH'
   @ranks '23456789'
-  @count 12
+  @count 8
 
   def start do
     import Enum
